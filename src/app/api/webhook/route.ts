@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ message: "Invalid credentials" }, { status: 401 });
   }
 
-  const body = await request.json();
+  const grafanaPayload = await request.json();
   const phone_number = await esClient
     .get<{
       phone_number: string;
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     .then((res) => res.body._source!.phone_number);
   await twilio.messages
     .create({
-      body: JSON.stringify(body).slice(0, 1500),
+      body: JSON.stringify(grafanaPayload).slice(0, 1500),
       from: "whatsapp:+15039266221",
       // to: "whatsapp:+491744079675", // GP
       to: `whatsapp:${phone_number}`,
@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
       console.log("SMS error", e);
     });
 
+  console.log({ grafanaPayload });
   return Response.json({ status: "ok" }, { status: 200 });
 }
 
