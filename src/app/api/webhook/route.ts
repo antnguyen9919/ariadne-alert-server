@@ -28,9 +28,10 @@ export async function POST(request: NextRequest) {
       id: "current_phone_number",
     })
     .then((res) => res.body._source!.phone_number);
+  const message = grafanaPayload.message || "Ariadne Alert";
   await twilio.messages
     .create({
-      body: JSON.stringify(grafanaPayload).slice(0, 1500),
+      body: message,
       from: "whatsapp:+15039266221",
       // to: "whatsapp:+491744079675", // GP
       to: `whatsapp:${phone_number}`,
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
     });
   await twilio.messages
     .create({
-      body: "Alert",
+      body: message,
       from: "+15039266221",
       to: phone_number,
     })
