@@ -4,7 +4,7 @@ import twilio from "@/lib/twilio";
 import esClient from "@/lib/elasticsearch";
 const DEFAULT_USERNAME = process.env.DEFAULT_USERNAME as string;
 const DEFAULT_PASSWORD = process.env.DEFAULT_PASSWORD as string;
-
+const contentSid = process.env.TWILIO_CONTENT_SID;
 export async function POST(request: NextRequest) {
   const headersList = await headers();
   const basicAuth = headersList.get("authorization");
@@ -28,30 +28,34 @@ export async function POST(request: NextRequest) {
       id: "current_phone_number",
     })
     .then((res) => res.body._source!.phone_number);
-  const message = grafanaPayload.message || "Ariadne Alert";
-  await twilio.messages
+  const target_area = grafanaPayload.message || "Ariadne Alert";
+  const whatsapp_response = await twilio.messages
     .create({
-      contentSid: "HX7b297875f9821492f8732b0e1c446490",
-      contentVariables: JSON.stringify({ "1": message }),
+      contentSid,
+      contentVariables: JSON.stringify({ "1": target_area }),
       from: "whatsapp:+15039266221",
       // to: "whatsapp:+491744079675", // GP
       to: `whatsapp:${phone_number}`,
       // to: "whatsapp:+4917641317141",
     })
-    .catch((error) => {
-      console.log("Whatsapp error", error);
+    .catch((error: any) => {
+      console.log("Whatsapp error: ", error.message || "No message");
     });
-  await twilio.messages
+  const message_response = await twilio.messages
     .create({
-      body: message,
+      body: `Please go to ${target_area}`,
       from: "+15039266221",
       to: phone_number,
     })
-    .catch((e) => {
-      console.log("SMS error", e);
+    .catch((error: any) => {
+      console.log("SMS error: ", error.message || "No message");
     });
 
-  console.log({ grafanaPayload });
+  console.log({
+    grafanaPayload,
+    message_response: message_response || {},
+    whatsapp_response: whatsapp_response || {},
+  });
   return Response.json({ status: "ok" }, { status: 200 });
 }
 

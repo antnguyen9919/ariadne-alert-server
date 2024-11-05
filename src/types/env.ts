@@ -8,6 +8,7 @@ declare global {
       TWILIO_ACCOUNT_SID: string;
       TWILIO_ACCOUNT_AUTHTOKEN: string;
       NEXT_PUBLIC_PROJECT_BASE_URL: string;
+      TWILIO_CONTENT_SID: string;
     }
   }
 }
